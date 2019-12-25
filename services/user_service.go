@@ -10,5 +10,6 @@ func CreateUserService(u users.UserData) (*users.UserData, *utils.APIResponse) {
 	if err := u.Validate(); err != nil {
 		return nil, err
 	}
-	return &u, nil
+	res := u.SaveUser()
+	return &u, res
 }
