@@ -9,7 +9,7 @@ import (
 func mapURLs() {
 	router.GET("/ping", ping.PingEndpoint)
 	router.GET("/", users.Index)
-	router.GET("/user", users.GetUser)
+	router.GET("/user/:user_id", users.GetUser)
 	router.POST("/user", users.CreateUser)
 	router.POST("/ws", socket.WsEndPoint)
 

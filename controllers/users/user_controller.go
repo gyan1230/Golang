@@ -1,13 +1,14 @@
 package users
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gyan1230/Golang/datasource/mysql/usersdb"
 	"github.com/gyan1230/Golang/domain/users"
 	"github.com/gyan1230/Golang/services"
 	"github.com/gyan1230/Golang/utils"
+	"log"
+	"net/http"
+	"strconv"
 )
 
 //Index :
@@ -28,14 +29,30 @@ func ping() error {
 
 //GetUser :
 func GetUser(c *gin.Context) {
-
-	err := ping()
+	userID, err := strconv.ParseInt(c.Param("user_id"), 10, 64)
 	if err != nil {
-		c.String(500, "ping error")
+		log.Println("url parse error:")
+		resterr := utils.InternalServerError("url parse error:")
+		c.JSON(resterr.HTTPCode, utils.APIData{
+			Data: *resterr,
+		},
+		)
 		return
 	}
-	c.JSON(200, "Ping sucessfull")
-
+	log.Printf("User Id: %d\n", userID)
+	result, res := services.GetUserService(userID)
+	if err != nil {
+		log.Println("user not found error:", res.Msg)
+		resterr := utils.InternalServerError(res.Msg)
+		c.JSON(resterr.HTTPCode, utils.APIData{
+			Data: *resterr,
+		},
+		)
+		return
+	}
+	log.Println(result)
+	c.JSON(200, result)
+	return
 }
 
 //CreateUser :
@@ -72,5 +89,5 @@ func CreateUser(c *gin.Context) {
 		)
 		return
 	}
-	c.JSON(201, res)
+	c.JSON(http.StatusCreated, res)
 }

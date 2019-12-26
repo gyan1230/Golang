@@ -9,6 +9,7 @@ import (
 
 const (
 	queryInsert = "INSERT INTO users(name,age,salary) VALUES(?,?,?);"
+	querySelect = "SELECT id, name, age, salary FROM users WHERE id=?;"
 )
 
 //SaveUser :
@@ -23,7 +24,7 @@ func (u *UserData) SaveUser() *utils.APIResponse {
 	result, err := stmt.Exec(u.Name, u.Age, u.Salary)
 	if err != nil {
 		log.Println("Saving into db error", err)
-		res := utils.InternalServerError(fmt.Sprintf("Saving into db error :%s\n", err))
+		res := utils.InternalServerError(fmt.Sprintf("Saving into db error :%s", err))
 		return res
 	}
 
@@ -41,5 +42,17 @@ func (u *UserData) SaveUser() *utils.APIResponse {
 
 //GetByID :
 func (u *UserData) GetByID() *utils.APIResponse {
+	stmt, err := usersdb.UsersDB.Prepare(querySelect)
+	if err != nil {
+		log.Println("Db query error:", err)
+		res := utils.InternalServerError("Db query error:")
+		return res
+	}
+	defer stmt.Close()
+	row := stmt.QueryRow(u.ID)
+	if err := row.Scan(&u.ID, &u.Name, &u.Age, &u.Salary); err != nil {
+		res := utils.InternalServerError(fmt.Sprintf("Getting from db error :%s\n", err))
+		return res
+	}
 	return nil
 }
